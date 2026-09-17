@@ -23,6 +23,7 @@ THUMB_PATH = config.THUMB_PATH
 async def lifespan(app: FastAPI):
     await database.connect()
     async with database.pool.acquire() as connection, connection.transaction():
+        # Make this imported instead of hardcoded
         await connection.execute(
             """
             CREATE TABLE
@@ -97,6 +98,7 @@ async def view_image_page(request: Request, id: str):
             "image_url": f"{APP_URL}/i/r?id={id}",
             "image_width": row["width"],
             "image_height": row["height"],
+            "image_created_at": row["created_at"].strftime("%B %d, %Y at %I:%M%p"),
         },
     )
 
