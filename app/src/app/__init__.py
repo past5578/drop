@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from app!")
+    print('Please run this app using "uv run fastapi run"')
