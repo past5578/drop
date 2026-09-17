@@ -1,0 +1,13 @@
+services:
+  database:
+    container_name: database
+    image: postgres:18
+    environment:
+      - POSTGRES_PASSWORD=123456789
+    ports:
+      - "5432:5432"
+    volumes:
+      - drop_database:/var/lib/postgresql
+
+volumes:
+  drop_database:
