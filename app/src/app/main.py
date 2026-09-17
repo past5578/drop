@@ -3,14 +3,17 @@ import warnings
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, Request, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.templating import Jinja2Templates
 from PIL import Image
 
 from app import config
 from app.postgres import database
 
 warnings.simplefilter("error", Image.DecompressionBombWarning)
+
+APP_URL = config.APP_URL
 
 IMAGE_PATH = config.IMAGE_PATH
 THUMB_PATH = config.THUMB_PATH
@@ -39,6 +42,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+templates = Jinja2Templates(directory="src/templates/")
 
 
 @app.post("/i/u")
@@ -79,8 +84,21 @@ async def upload_image(file: UploadFile):
 
 
 @app.get("/i/v")
-def view_image_page(id: str):
-    pass
+async def view_image_page(request: Request, id: str):
+    async with database.pool.acquire() as connection, connection.transaction():
+        row = await connection.fetchrow(
+            "SELECT * FROM image_metadata WHERE id = $1", id
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="image.html",
+        context={
+            "image_url": f"{APP_URL}/i/r?id={id}",
+            "image_width": row["width"],
+            "image_height": row["height"],
+        },
+    )
 
 
 @app.get("/i/r")
