@@ -1,8 +1,10 @@
 import uuid
 import warnings
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, UploadFile
+from fastapi.responses import FileResponse
 from PIL import Image
 
 from app import config
@@ -17,7 +19,22 @@ THUMB_PATH = config.THUMB_PATH
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database.connect()
+    async with database.pool.acquire() as connection, connection.transaction():
+        await connection.execute(
+            """
+            CREATE TABLE
+                IF NOT EXISTS image_metadata (
+                    id uuid PRIMARY KEY,
+                    extension text NOT NULL,
+                    file_path text NOT NULL,
+                    width integer NOT NULL,
+                    height integer NOT NULL,
+                    created_at timestamptz NOT NULL
+                )"""
+        )
+
     yield
+
     await database.disconnect()
 
 
@@ -43,7 +60,22 @@ async def upload_image(file: UploadFile):
     image_ext = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp"}[image.format]
     image_filename = f"{image_id}.{image_ext}"
 
-    (IMAGE_PATH / image_filename).write_bytes(content)
+    image_filepath = IMAGE_PATH / image_filename
+
+    image_filepath.write_bytes(content)
+
+    async with database.pool.acquire() as connection, connection.transaction():
+        await connection.execute(
+            "INSERT INTO image_metadata (id, extension, file_path, width, height, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
+            image_id,
+            image_ext,
+            image_filepath.as_posix(),
+            image.width,
+            image.height,
+            datetime.now(timezone.utc),
+        )
+
+    return {"id": image_id}
 
 
 @app.get("/i/v")
@@ -52,5 +84,15 @@ def view_image_page(id: str):
 
 
 @app.get("/i/r")
-def view_raw_image(id: str):
-    pass
+async def view_raw_image(id: str):
+    async with database.pool.acquire() as connection, connection.transaction():
+        row = await connection.fetchrow(
+            "SELECT * FROM image_metadata WHERE id = $1", id
+        )
+
+    image_filepath = row["file_path"]
+
+    if not image_filepath:
+        return {"error": "image not found"}
+
+    return FileResponse(image_filepath)
