@@ -20,3 +20,4 @@ This list is not in order of priority.
 - Create a worker for image processing, like generating thumbnails and any other jobs that will be useful for this.
 - Design a user system (will likely be invite only on my personal deployment) and integrate user data with the database schema.
 - Design the pretty HTML page for images
+- Implement caching for images
