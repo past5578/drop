@@ -9,4 +9,4 @@ ENV UV_NO_DEV=1
 
 RUN uv sync --locked
 
-CMD ["uv", "run", "fastapi", "run", "src/app/main.py"]
+CMD ["uv", "run", "app"]

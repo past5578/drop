@@ -1,2 +1,5 @@
-def main() -> None:
-    print('Please run this app using "uv run fastapi run"')
+import uvicorn
+
+
+def main():
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)

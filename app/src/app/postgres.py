@@ -11,7 +11,7 @@ class Postgres:
         self.pool = await asyncpg.create_pool(self.database_url)
 
     async def disconnect(self):
-        self.pool.close()
+        await self.pool.close()
 
 
 database = Postgres(
