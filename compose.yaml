@@ -3,6 +3,7 @@ services:
     container_name: drop-app
     build: ./app
     environment:
+      - APP_URL=https://127.0.0.1:8000
       - DATABASE_URL=database:5432
       - DATABASE_PASSWORD=123456789
     ports:
