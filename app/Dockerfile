@@ -1,9 +1,9 @@
 FROM python:3.14-slim
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-COPY . /app
-
 WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY . .
 
 ENV UV_NO_DEV=1
 

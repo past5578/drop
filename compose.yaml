@@ -11,6 +11,14 @@ services:
     networks:
       - drop
 
+  web:
+    container_name: drop-web
+    build: ./web
+    ports:
+      - "8001:4321"
+    networks:
+      - drop
+
   database:
     container_name: database
     image: postgres:18
