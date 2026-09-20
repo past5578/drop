@@ -7,8 +7,6 @@ load_dotenv()
 
 IS_DOCKER = bool(os.environ.get("DOCKER"))
 
-APP_URL = os.environ["APP_URL"]
-
 DATABASE_URL = os.environ["DATABASE_URL"]
 DATABASE_PASSWORD = os.environ["DATABASE_PASSWORD"]
 

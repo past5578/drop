@@ -1,6 +1,6 @@
 import asyncpg
 
-from app import config
+from api import config
 
 
 class Postgres:

@@ -7,12 +7,10 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
 from PIL import Image
 
-from app import config
-from app.postgres import database
+from api import config
+from api.postgres import database
 
 warnings.simplefilter("error", Image.DecompressionBombWarning)
-
-APP_URL = config.APP_URL
 
 IMAGE_PATH = config.IMAGE_PATH
 THUMB_PATH = config.THUMB_PATH
