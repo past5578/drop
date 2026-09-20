@@ -3,9 +3,8 @@ import warnings
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, Request, UploadFile
+from fastapi import FastAPI, UploadFile
 from fastapi.responses import FileResponse
-from fastapi.templating import Jinja2Templates
 from PIL import Image
 
 from app import config
@@ -44,10 +43,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-templates = Jinja2Templates(directory="src/templates/")
 
-
-@app.post("/i/u")
+@app.post("/api/img/upload")
 async def upload_image(file: UploadFile):
     content = await file.read()
 
@@ -84,26 +81,7 @@ async def upload_image(file: UploadFile):
     return {"id": image_id}
 
 
-@app.get("/i/v")
-async def view_image_page(request: Request, id: str):
-    async with database.pool.acquire() as connection, connection.transaction():
-        row = await connection.fetchrow(
-            "SELECT * FROM image_metadata WHERE id = $1", id
-        )
-
-    return templates.TemplateResponse(
-        request=request,
-        name="image.html",
-        context={
-            "image_url": f"{APP_URL}/i/r?id={id}",
-            "image_width": row["width"],
-            "image_height": row["height"],
-            "image_created_at": row["created_at"].strftime("%B %d, %Y at %I:%M%p"),
-        },
-    )
-
-
-@app.get("/i/r")
+@app.get("/api/image/raw")
 async def view_raw_image(id: str):
     async with database.pool.acquire() as connection, connection.transaction():
         row = await connection.fetchrow(
